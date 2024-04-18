@@ -1,0 +1,93 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Mini_NEA
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            StartingMenu();
+            Console.ReadKey();
+        }
+        static void StartingMenu()
+        {
+            Console.WriteLine("Choose from the following:\nEncrypt Message [1]\nDecrypt Message [2]\nExit the program [3]");
+            string startingMenuChoiceString = Console.ReadLine();
+            int startingMenuChoiceInt = Convert.ToInt32(startingMenuChoiceString);
+
+            if (startingMenuChoiceInt == 1 || startingMenuChoiceInt == 2 || startingMenuChoiceInt == 3)
+            {
+                switch (startingMenuChoiceInt)
+                {
+                    case 1:
+                        EncryptMessageSteps();
+                        break;
+                    case 2:
+                        DecryptMessageSteps();
+                        break;
+                    case 3:
+                        Environment.Exit(0);
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Input was not recognised");
+                StartingMenu();
+            }
+
+        }
+        static void EncryptMessageSteps()
+        {
+            DisplayFiles();
+        }
+        static void DisplayFiles()
+        {
+            string folderPath = @"D:\Coding\Mini Nea\Sample Files";
+            int fileNum = 1;
+            string[] fileOptions = Directory.GetFiles(folderPath);
+            Console.WriteLine("Choose which file: ");
+
+            foreach (string file in fileOptions)
+            {
+                Console.WriteLine($"{file} [{fileNum}]");
+                fileNum++;
+            }
+
+            string fileChosenString = Console.ReadLine();
+            int fileChosenInt = Convert.ToInt32(fileChosenString) - 1;
+            // - 1 due to arrays being 0 indexed
+
+            if(fileChosenInt > fileOptions.Length || fileChosenInt < 0)
+            {
+                Console.WriteLine("Chosen file not available");
+                DisplayFiles();
+            }
+
+            string fileChosenPath = fileOptions[fileChosenInt];
+            LoadChosenFile(fileChosenPath);
+        }
+        static void LoadChosenFile(string fileChosenPath)
+        {
+
+            string chosenFileContents = string.Empty;
+            StreamReader readFile = new StreamReader(fileChosenPath);
+            
+            while (!readFile.EndOfStream)
+            // while not at the end of the document
+            {
+                chosenFileContents += readFile.ReadLine();
+            }
+
+            List<char> chosenFileContentsList = chosenFileContents.ToList();
+            // string is converted into list which contains all characters within string
+        }
+        static void DecryptMessageSteps()
+        {
+
+        }
+    }
+}
