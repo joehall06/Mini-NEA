@@ -65,12 +65,14 @@ namespace Mini_NEA
             {
                 Console.WriteLine("Chosen file not available");
                 DisplayFiles();
+                return;
+                // doesn't allow wrong value to continue in the code
             }
 
             string fileChosenPath = fileOptions[fileChosenInt];
-            LoadChosenFile(fileChosenPath);
+            LoadChosenFile(fileChosenPath, folderPath);
         }
-        static void LoadChosenFile(string fileChosenPath)
+        static void LoadChosenFile(string fileChosenPath, string folderPath)
         {
 
             string chosenFileContents = string.Empty;
@@ -81,9 +83,80 @@ namespace Mini_NEA
             {
                 chosenFileContents += readFile.ReadLine();
             }
+            readFile.Close();
 
-            List<char> chosenFileContentsList = chosenFileContents.ToList();
-            // string is converted into list which contains all characters within string
+            char[] chosenFileContentInArray = chosenFileContents.ToCharArray();
+            // string is converted into array which contains all characters within string
+
+            GenerateCharacterKey(chosenFileContentInArray, folderPath);
+        }
+        static void GenerateCharacterKey(char[] chosenFileContentInArray, string folderPath)
+        {
+            string characterKeyString = string.Empty;
+            int randomIntSum = 0;
+
+            for (int i = 1; i <= 8; i++)
+            {
+                Random random = new Random();
+                int randomInt = random.Next(33, 127);
+                // generates a random number between 33 - 126
+
+                randomIntSum += randomInt;
+
+                char randomIntAscii = (char)randomInt;
+                // converts random number into its equivalent ASCII value
+
+                characterKeyString += randomIntAscii;
+            }
+
+            char[] characterKeyArray = characterKeyString.ToCharArray();
+            // converts character key into an array of each individual character
+
+            Console.WriteLine($"The eight-digit character key is: {characterKeyString}");
+
+            GenerateOffsetFactor(randomIntSum, chosenFileContentInArray, folderPath);
+        }
+        static void GenerateOffsetFactor(int randomIntSum, char[] chosenFileContentInArray, string folderPath)
+        {
+            int offsetFactor = (randomIntSum / 8) - 32;
+            // as offsetFactor is an integer value it will automatically return the integer part of the value as it discards the part
+            EncryptingMessage(offsetFactor, chosenFileContentInArray, folderPath);
+        }
+        static void EncryptingMessage(int offsetFactor, char[] chosenFileContentInArray, string folderPath)
+        {
+            int convertedAsciiCharacter = 0;
+            string cipherText = string.Empty;
+
+            foreach (char character in chosenFileContentInArray)
+            {
+                if (character == ' ')
+                // '' used for char, "" used for string
+                {
+                    continue;
+                   // skip to next iteration of the loop
+                }
+                convertedAsciiCharacter += (char)character + offsetFactor;
+
+                if (convertedAsciiCharacter > 126)
+                {
+                    convertedAsciiCharacter -= 94;
+                }
+
+                cipherText += (char)convertedAsciiCharacter;
+            }
+            AddingToNewFile(cipherText, folderPath);
+        }
+        static void AddingToNewFile(string cipherText, string folderPath)
+        {
+            Console.WriteLine("Enter the name of the new file you want to save ciphertext to: ");
+            string cipherTextFileName = Console.ReadLine();
+            string cipherTextFile = Path.Combine(folderPath, $"{cipherTextFileName}.txt");
+            File.Create(cipherTextFile);
+
+            StreamWriter fileWrite = new StreamWriter(cipherTextFile, true);
+            // true appends contents instead of overwriting
+            fileWrite.WriteLine(cipherText);
+            fileWrite.Close();
         }
         static void DecryptMessageSteps()
         {
@@ -91,3 +164,4 @@ namespace Mini_NEA
         }
     }
 }
+
