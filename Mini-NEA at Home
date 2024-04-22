@@ -7,6 +7,7 @@ namespace Mini_NEA
 {
     internal class Program
     {
+        static string folderPath = @"D:\Coding\Mini Nea\Sample Files\Plaintext";
         static void Main(string[] args)
         {
             StartingMenu();
@@ -46,7 +47,6 @@ namespace Mini_NEA
         }
         static void DisplayFiles()
         {
-            string folderPath = @"D:\Coding\Mini Nea\Sample Files";
             int fileNum = 1;
             string[] fileOptions = Directory.GetFiles(folderPath);
             Console.WriteLine("Choose which file: ");
@@ -70,9 +70,9 @@ namespace Mini_NEA
             }
 
             string fileChosenPath = fileOptions[fileChosenInt];
-            LoadChosenFile(fileChosenPath, folderPath);
+            LoadChosenFile(fileChosenPath);
         }
-        static void LoadChosenFile(string fileChosenPath, string folderPath)
+        static void LoadChosenFile(string fileChosenPath)
         {
 
             string chosenFileContents = string.Empty;
@@ -88,9 +88,9 @@ namespace Mini_NEA
             char[] chosenFileContentInArray = chosenFileContents.ToCharArray();
             // string is converted into array which contains all characters within string
 
-            GenerateCharacterKey(chosenFileContentInArray, folderPath);
+            GenerateCharacterKey(chosenFileContentInArray);
         }
-        static void GenerateCharacterKey(char[] chosenFileContentInArray, string folderPath)
+        static void GenerateCharacterKey(char[] chosenFileContentInArray)
         {
             string characterKeyString = string.Empty;
             int randomIntSum = 0;
@@ -114,15 +114,15 @@ namespace Mini_NEA
 
             Console.WriteLine($"The eight-digit character key is: {characterKeyString}");
 
-            GenerateOffsetFactor(randomIntSum, chosenFileContentInArray, folderPath);
+            GenerateOffsetFactor(randomIntSum, chosenFileContentInArray);
         }
-        static void GenerateOffsetFactor(int randomIntSum, char[] chosenFileContentInArray, string folderPath)
+        static void GenerateOffsetFactor(int randomIntSum, char[] chosenFileContentInArray)
         {
             int offsetFactor = (randomIntSum / 8) - 32;
             // as offsetFactor is an integer value it will automatically return the integer part of the value as it discards the part
-            EncryptingMessage(offsetFactor, chosenFileContentInArray, folderPath);
+            EncryptingMessage(offsetFactor, chosenFileContentInArray);
         }
-        static void EncryptingMessage(int offsetFactor, char[] chosenFileContentInArray, string folderPath)
+        static void EncryptingMessage(int offsetFactor, char[] chosenFileContentInArray)
         {
             int convertedAsciiCharacter = 0;
             string cipherText = string.Empty;
@@ -137,23 +137,22 @@ namespace Mini_NEA
                 }
                 convertedAsciiCharacter += (char)character + offsetFactor;
 
-                if (convertedAsciiCharacter > 126)
+                if (convertedAsciiCharacter > 126) 
                 {
                     convertedAsciiCharacter -= 94;
                 }
 
                 cipherText += (char)convertedAsciiCharacter;
             }
-            AddingToNewFile(cipherText, folderPath);
+            AddingToNewFile(cipherText);
         }
-        static void AddingToNewFile(string cipherText, string folderPath)
+        static void AddingToNewFile(string cipherText)
         {
-            Console.WriteLine("Enter the name of the new file you want to save ciphertext to: ");
+            Console.WriteLine("Enter the name of the file you want the cipher text to be called: ");
             string cipherTextFileName = Console.ReadLine();
-            string cipherTextFile = Path.Combine(folderPath, $"{cipherTextFileName}.txt");
-            File.Create(cipherTextFile);
 
-            StreamWriter fileWrite = new StreamWriter(cipherTextFile, true);
+            string cipherTextFilePath = $@"D:\Coding\Mini Nea\Sample Files\Ciphertext\{cipherTextFileName}.txt";
+            StreamWriter fileWrite = new StreamWriter(cipherTextFilePath, true);
             // true appends contents instead of overwriting
             fileWrite.WriteLine(cipherText);
             fileWrite.Close();
@@ -164,4 +163,3 @@ namespace Mini_NEA
         }
     }
 }
-
