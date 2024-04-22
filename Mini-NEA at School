@@ -1,0 +1,167 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+
+namespace Mini_NEA
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            StartingMenu();
+            Console.ReadKey();
+        }
+        static void StartingMenu()
+        {
+            Console.WriteLine("Choose from the following:\nEncrypt Message [1]\nDecrypt Message [2]\nExit the program [3]");
+            string startingMenuChoiceString = Console.ReadLine();
+            int startingMenuChoiceInt = Convert.ToInt32(startingMenuChoiceString);
+
+            if (startingMenuChoiceInt == 1 || startingMenuChoiceInt == 2 || startingMenuChoiceInt == 3)
+            {
+                switch (startingMenuChoiceInt)
+                {
+                    case 1:
+                        EncryptMessageSteps();
+                        break;
+                    case 2:
+                        DecryptMessageSteps();
+                        break;
+                    case 3:
+                        Environment.Exit(0);
+                        break;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Input was not recognised");
+                StartingMenu();
+            }
+
+        }
+        static void EncryptMessageSteps()
+        {
+            DisplayFiles();
+        }
+        static void DisplayFiles()
+        {
+            string folderPath = @"\\sac-fs1-001\student-home$\Intake2018\18JosephHall\Documents\A-Levels\Computing\Mini NEA\Sample Files";
+            int fileNum = 1;
+            string[] fileOptions = Directory.GetFiles(folderPath);
+            Console.WriteLine("Choose which file: ");
+
+            foreach (string file in fileOptions)
+            {
+                Console.WriteLine($"{file} [{fileNum}]");
+                fileNum++;
+            }
+
+            string fileChosenString = Console.ReadLine();
+            int fileChosenInt = Convert.ToInt32(fileChosenString) - 1;
+            // - 1 due to arrays being 0 indexed
+
+            if (fileChosenInt > fileOptions.Length || fileChosenInt < 0)
+            {
+                Console.WriteLine("Chosen file not available");
+                DisplayFiles();
+                return;
+                // doesn't allow wrong value to continue in the code
+            }
+
+            string fileChosenPath = fileOptions[fileChosenInt];
+            LoadChosenFile(fileChosenPath, folderPath);
+        }
+        static void LoadChosenFile(string fileChosenPath, string folderPath)
+        {
+
+            string chosenFileContents = string.Empty;
+            StreamReader readFile = new StreamReader(fileChosenPath);
+
+            while (!readFile.EndOfStream)
+            // while not at the end of the document
+            {
+                chosenFileContents += readFile.ReadLine();
+            }
+            readFile.Close();
+
+            char[] chosenFileContentInArray = chosenFileContents.ToCharArray();
+            // string is converted into array which contains all characters within string
+
+            GenerateCharacterKey(chosenFileContentInArray, folderPath);
+        }
+        static void GenerateCharacterKey(char[] chosenFileContentInArray, string folderPath)
+        {
+            string characterKeyString = string.Empty;
+            int randomIntSum = 0;
+
+            for (int i = 1; i <= 8; i++)
+            {
+                Random random = new Random();
+                int randomInt = random.Next(33, 127);
+                // generates a random number between 33 - 126
+
+                randomIntSum += randomInt;
+
+                char randomIntAscii = (char)randomInt;
+                // converts random number into its equivalent ASCII value
+
+                characterKeyString += randomIntAscii;
+            }
+
+            char[] characterKeyArray = characterKeyString.ToCharArray();
+            // converts character key into an array of each individual character
+
+            Console.WriteLine($"The eight-digit character key is: {characterKeyString}");
+
+            GenerateOffsetFactor(randomIntSum, chosenFileContentInArray, folderPath);
+        }
+        static void GenerateOffsetFactor(int randomIntSum, char[] chosenFileContentInArray, string folderPath)
+        {
+            int offsetFactor = (randomIntSum / 8) - 32;
+            // as offsetFactor is an integer value it will automatically return the integer part of the value as it discards the part
+            EncryptingMessage(offsetFactor, chosenFileContentInArray, folderPath);
+        }
+        static void EncryptingMessage(int offsetFactor, char[] chosenFileContentInArray, string folderPath)
+        {
+            int convertedAsciiCharacter = 0;
+            string cipherText = string.Empty;
+
+            foreach (char character in chosenFileContentInArray)
+            {
+                if (character == ' ')
+                // '' used for char, "" used for string
+                {
+                    continue;
+                    // skip to next iteration of the loop
+                }
+                convertedAsciiCharacter += (char)character + offsetFactor;
+
+                if (convertedAsciiCharacter > 126)
+                {
+                    convertedAsciiCharacter -= 94;
+                }
+
+                cipherText += (char)convertedAsciiCharacter;
+            }
+            AddingToNewFile(cipherText, folderPath);
+        }
+        static void AddingToNewFile(string cipherText, string folderPath)
+        {
+            //Console.WriteLine("Enter the name of the new file you want to save ciphertext to: ");
+            //string cipherTextFileName = Console.ReadLine();
+            //string cipherTextFile = Path.Combine(folderPath, $"{cipherTextFileName}.txt");
+            //File.Create(cipherTextFile);
+
+            string cipherTextFilePath = @"\\sac-fs1-001\student-home$\Intake2018\18JosephHall\Documents\A-Levels\Computing\Mini NEA\Sample Files\Encrypted Message.txt";
+            StreamWriter fileWrite = new StreamWriter(cipherTextFilePath, true);
+            // true appends contents instead of overwriting
+            fileWrite.WriteLine(cipherText);
+            fileWrite.Close();
+        }
+        static void DecryptMessageSteps()
+        {
+
+        }
+    }
+}
