@@ -7,7 +7,7 @@ namespace Mini_NEA
 {
     internal class Program
     {
-        static string folderPath = @"D:\Coding\Mini Nea\Sample Files\Plaintext";
+        static string folderPath = @"\\sac-fs1-001\student-home$\Intake2018\18JosephHall\Documents\A-Levels\Computing\Mini NEA\Sample Files\Plain Text";
         static void Main(string[] args)
         {
             StartingMenu();
@@ -16,7 +16,7 @@ namespace Mini_NEA
         static void StartingMenu()
         {
             Console.WriteLine("Choose from the following:\nEncrypt Message [1]\nDecrypt Message [2]\nExit the program [3]");
-            string startingMenuChoiceString = Console.ReadLine();
+            string? startingMenuChoiceString = Console.ReadLine();
             int startingMenuChoiceInt = Convert.ToInt32(startingMenuChoiceString);
 
             if (startingMenuChoiceInt == 1 || startingMenuChoiceInt == 2 || startingMenuChoiceInt == 3)
@@ -43,9 +43,14 @@ namespace Mini_NEA
         }
         static void EncryptMessageSteps()
         {
-            DisplayFiles();
+            string fileChosenPath = DisplayFiles();
+            char[] chosenFileContentInArray = LoadChosenFile(fileChosenPath);
+            int randomIntSum = GenerateCharacterKey(chosenFileContentInArray);
+            int offsetFactor = GenerateOffsetFactor(randomIntSum, chosenFileContentInArray);
+            string cipherText = EncryptingMessage(offsetFactor, chosenFileContentInArray);
+            AddingToNewFile(cipherText);
         }
-        static void DisplayFiles()
+        static string DisplayFiles()
         {
             int fileNum = 1;
             string[] fileOptions = Directory.GetFiles(folderPath);
@@ -57,27 +62,27 @@ namespace Mini_NEA
                 fileNum++;
             }
 
-            string fileChosenString = Console.ReadLine();
+            string? fileChosenString = Console.ReadLine();
             int fileChosenInt = Convert.ToInt32(fileChosenString) - 1;
             // - 1 due to arrays being 0 indexed
 
-            if(fileChosenInt > fileOptions.Length || fileChosenInt < 0)
+            if (fileChosenInt > fileOptions.Length || fileChosenInt < 0)
             {
                 Console.WriteLine("Chosen file not available");
                 DisplayFiles();
-                return;
+                return "";
                 // doesn't allow wrong value to continue in the code
             }
 
             string fileChosenPath = fileOptions[fileChosenInt];
-            LoadChosenFile(fileChosenPath);
+            return fileChosenPath;
         }
-        static void LoadChosenFile(string fileChosenPath)
+        static char[] LoadChosenFile(string fileChosenPath)
         {
 
             string chosenFileContents = string.Empty;
             StreamReader readFile = new StreamReader(fileChosenPath);
-            
+
             while (!readFile.EndOfStream)
             // while not at the end of the document
             {
@@ -88,9 +93,9 @@ namespace Mini_NEA
             char[] chosenFileContentInArray = chosenFileContents.ToCharArray();
             // string is converted into array which contains all characters within string
 
-            GenerateCharacterKey(chosenFileContentInArray);
+            return chosenFileContentInArray;
         }
-        static void GenerateCharacterKey(char[] chosenFileContentInArray)
+        static int GenerateCharacterKey(char[] chosenFileContentInArray)
         {
             string characterKeyString = string.Empty;
             int randomIntSum = 0;
@@ -114,15 +119,15 @@ namespace Mini_NEA
 
             Console.WriteLine($"The eight-digit character key is: {characterKeyString}");
 
-            GenerateOffsetFactor(randomIntSum, chosenFileContentInArray);
+            return randomIntSum;
         }
-        static void GenerateOffsetFactor(int randomIntSum, char[] chosenFileContentInArray)
+        static int GenerateOffsetFactor(int randomIntSum, char[] chosenFileContentInArray)
         {
             int offsetFactor = (randomIntSum / 8) - 32;
             // as offsetFactor is an integer value it will automatically return the integer part of the value as it discards the part
-            EncryptingMessage(offsetFactor, chosenFileContentInArray);
+            return offsetFactor;
         }
-        static void EncryptingMessage(int offsetFactor, char[] chosenFileContentInArray)
+        static string EncryptingMessage(int offsetFactor, char[] chosenFileContentInArray)
         {
             int convertedAsciiCharacter = 0;
             string cipherText = string.Empty;
@@ -133,25 +138,25 @@ namespace Mini_NEA
                 // '' used for char, "" used for string
                 {
                     continue;
-                   // skip to next iteration of the loop
+                    // skip to next iteration of the loop
                 }
                 convertedAsciiCharacter += (char)character + offsetFactor;
 
-                if (convertedAsciiCharacter > 126) 
+                if (convertedAsciiCharacter > 126)
                 {
                     convertedAsciiCharacter -= 94;
                 }
 
                 cipherText += (char)convertedAsciiCharacter;
             }
-            AddingToNewFile(cipherText);
+            return cipherText;
         }
         static void AddingToNewFile(string cipherText)
         {
             Console.WriteLine("Enter the name of the file you want the cipher text to be called: ");
-            string cipherTextFileName = Console.ReadLine();
+            string? cipherTextFileName= Console.ReadLine(); 
 
-            string cipherTextFilePath = $@"D:\Coding\Mini Nea\Sample Files\Ciphertext\{cipherTextFileName}.txt";
+            string cipherTextFilePath = $@"\\sac-fs1-001\student-home$\Intake2018\18JosephHall\Documents\A-Levels\Computing\Mini NEA\Sample Files\Cipher Text\{cipherTextFileName}.txt";
             StreamWriter fileWrite = new StreamWriter(cipherTextFilePath, true);
             // true appends contents instead of overwriting
             fileWrite.WriteLine(cipherText);
